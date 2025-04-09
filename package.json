@@ -1,0 +1,27 @@
+{
+  "name": "alpaca-bot",
+  "version": "1.0.0",
+  "description": "Automated trading bot using Alpaca API with React dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "longbot": "node longbot.js",
+    "shortbot": "node shortbot.js",
+    "dev:dashboard": "cd dashboard && npm run dev"
+  },
+  "keywords": ["alpaca", "trading", "bot", "dashboard"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@alpacahq/alpaca-trade-api": "^3.1.3",
+    "axios": "^1.8.4",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "nodemailer": "^6.10.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "sqlite3": "^5.1.7"
+  }
+}
