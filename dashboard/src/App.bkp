@@ -10,7 +10,6 @@ export default function App() {
   const [trades, setTrades] = useState([]);
   const [biasHistory, setBiasHistory] = useState([]);
   const [setupRules, setSetupRules] = useState([]);
-  const [ruleChoices, setRuleChoices] = useState({});
   const [tab, setTab] = useState('positions');
   const [lastUpdate, setLastUpdate] = useState(null);
   const [strategy, setStrategy] = useState('both');
@@ -49,22 +48,17 @@ export default function App() {
 
   const fetchSetupRules = async () => {
     const res = await fetch('http://localhost:4000/api/setup-rules');
-    const rules = await res.json();
-    setSetupRules(rules);
-
-    const choices = {};
-    for (const rule of rules) {
-      const r = await fetch(`http://localhost:4000/api/setup-choices/${rule.RuleID}`);
-      choices[rule.RuleID] = await r.json();
-    }
-    setRuleChoices(choices);
+    const data = await res.json();
+    setSetupRules(data);
   };
 
   const applyRecommendedSetup = async () => {
     const res = await fetch('http://localhost:4000/api/setup-rules/set-recommended', {
       method: 'POST'
     });
-    if (res.ok) await fetchSetupRules();
+    if (res.ok) {
+      await fetchSetupRules();
+    }
   };
 
   const updateRuleValue = async (ruleID, value) => {
@@ -171,44 +165,26 @@ export default function App() {
           </tr>
         </thead>
         <tbody>
-          {setupRules.map((rule, idx) => {
-            const options = ruleChoices[rule.RuleID] || [];
-            const currentValue = rule.CurrentChoiceValue;
-            const isRecommended = options.some(opt =>
-              opt.RiskValue === 'recommended' && opt.ChoiceValue === currentValue
-            );
-            const currentRisk = options.find(opt => opt.ChoiceValue === currentValue)?.RiskValue || '—';
-
-            return (
-              <tr key={idx} className="border-b hover:bg-gray-100">
-                <td>{rule.label}</td>
-                <td>
-                  <select
-                    className="border px-2 py-1 rounded w-full"
-                    value={currentValue}
-                    onChange={async (e) => {
-                      const value = e.target.value;
-                      const updated = [...setupRules];
-                      updated[idx].CurrentChoiceValue = value;
-                      setSetupRules(updated);
-                      await updateRuleValue(rule.RuleID, value);
-                    }}
-                  >
-                    {options.map((opt, i) => (
-                      <option key={i} value={opt.ChoiceValue}>
-                        {opt.ChoiceValue} — {opt.RiskValue}{opt.RiskValue === 'recommended' ? ' ✅' : ''}
-                      </option>
-                    ))}
-                    {!options.some(opt => opt.ChoiceValue === currentValue) && (
-                      <option value={currentValue}>{currentValue} — custom</option>
-                    )}
-                  </select>
-                </td>
-                <td>{currentRisk}</td>
-                <td>{isRecommended ? '✅' : ''}</td>
-              </tr>
-            );
-          })}
+          {setupRules.map((rule, idx) => (
+            <tr key={idx} className="border-b hover:bg-gray-100">
+              <td>{rule.label}</td>
+              <td>
+                <input
+                  type="text"
+                  className="border px-2 py-1 rounded w-full"
+                  value={rule.CurrentChoiceValue}
+                  onChange={(e) => {
+                    const updated = [...setupRules];
+                    updated[idx].CurrentChoiceValue = e.target.value;
+                    setSetupRules(updated);
+                  }}
+                  onBlur={() => updateRuleValue(rule.RuleID, rule.CurrentChoiceValue)}
+                />
+              </td>
+              <td>{rule.RiskValue || '—'}</td>
+              <td>{rule.RiskValue === 'recommended' ? '✅' : ''}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
@@ -296,8 +272,7 @@ export default function App() {
         </thead>
         <tbody>
           {positions.map(pos => {
-            if (pos.entry_price == null) return null;
-
+            if (!pos.current_price || !pos.entry_price) return null;
 
             const pnl = pos.side === 'long'
               ? (pos.current_price - pos.entry_price) * pos.qty
@@ -309,24 +284,20 @@ export default function App() {
 
             const pnlColor = isProfit ? 'text-green-600' : 'text-red-600';
 
+            const shouldExit =
+              (pos.side === 'long' && (((pos.current_price - pos.entry_price) / pos.entry_price) * 100 >= 1.25 || ((pos.current_price - pos.entry_price) / pos.entry_price) * 100 <= -0.5)) ||
+              (pos.side === 'short' && (((pos.entry_price - pos.current_price) / pos.entry_price) * 100 >= 1 || ((pos.entry_price - pos.current_price) / pos.entry_price) * 100 <= -0.25));
+
             return (
-              <tr key={pos.id} className={`border-b hover:bg-gray-100`}>
+              <tr key={pos.id} className={`border-b hover:bg-gray-100 ${shouldExit ? 'bg-red-200' : ''}`}>
                 <td>{pos.symbol}</td>
                 <td className="capitalize">{pos.side}</td>
                 <td>{pos.qty}</td>
                 <td>${pos.entry_price.toFixed(2)}</td>
-                <td>
-                  {pos.current_price != null && !isNaN(pos.current_price)
-                    ? `$${parseFloat(pos.current_price).toFixed(2)}`
-                    : '—'}
-                </td>
+                <td>{!isNaN(pos.current_price) ? `$${pos.current_price.toFixed(2)}` : '—'}</td>
                 <td className={pnlColor}>{isNaN(pnl) ? '—' : `$${pnl.toFixed(2)}`}</td>
                 <td>{new Date(pos.entry_time).toLocaleTimeString()}</td>
-                <td>
-                  {pos.last_update && !isNaN(new Date(pos.last_update))
-                    ? new Date(pos.last_update).toLocaleTimeString()
-                    : '—'}
-                </td>
+                <td>{pos.last_update ? new Date(pos.last_update).toLocaleTimeString() : '—'}</td>
               </tr>
             );
           })}
