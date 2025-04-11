@@ -14,7 +14,7 @@ export default function App() {
   const [tab, setTab] = useState('positions');
   const [lastUpdate, setLastUpdate] = useState(null);
   const [strategy, setStrategy] = useState('both');
-  const [lastBotRun, setLastBotRun] = useState(null);
+   const [lastBotRun, setLastBotRun] = useState(null);
 
   const updateTimestamp = () => setLastUpdate(new Date().toLocaleTimeString());
 
