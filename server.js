@@ -6,7 +6,7 @@ const sqlite3 = require('sqlite3').verbose();
 const { Server } = require('socket.io');
 const Alpaca = require('@alpacahq/alpaca-trade-api');
 const cors = require('cors');
-const { exec } = require('child_process');
+ const { exec } = require('child_process');
 
 const app = express();
 const server = http.createServer(app);

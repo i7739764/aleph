@@ -1,6 +1,6 @@
 // db.js
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./bot_trades.db');
+ const db = new sqlite3.Database('./bot_trades.db');
 
 function savePosition({ symbol, side, qty, entry_price, entry_time }) {
   db.run(`

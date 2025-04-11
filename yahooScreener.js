@@ -1,7 +1,7 @@
 // yahooScreener.js
 const axios = require('axios');
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./bot_trades.db');
+ const db = new sqlite3.Database('./bot_trades.db');
 
 module.exports = async function fetchSafeCandidates(mode = 'short') {
   const config = await getThresholds();

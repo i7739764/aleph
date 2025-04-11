@@ -2,7 +2,7 @@
 require('dotenv').config();
 const Alpaca = require('@alpacahq/alpaca-trade-api');
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./bot_trades.db');
+ const db = new sqlite3.Database('./bot_trades.db');
 
 const alpaca = new Alpaca({
   keyId: process.env.ALPACA_API_KEY,

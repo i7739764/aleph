@@ -7,7 +7,7 @@ const { savePosition, removePosition, logTrade } = require('./db');
 const axios = require('axios');
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./bot_trades.db');
-const { exec } = require('child_process');
+ const { exec } = require('child_process');
 
 const alpaca = new Alpaca({
   keyId: process.env.ALPACA_API_KEY,
